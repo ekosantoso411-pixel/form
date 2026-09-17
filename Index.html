@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Penilaian PK Mahasiswa - Terintegrasi Google Sheets</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        unypurple: '#1c3144',
+                        unyblue: '#3b82f6',
+                        unylight: '#f8fafc'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 flex flex-col justify-between">
+
+    <header class="bg-[#1c3144] text-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg font-bold text-lg shadow">PK</div>
+                <div>
+                    <h1 class="font-bold text-lg">Sistem Penilaian Pengenalan Lapangan (PK) UNY</h1>
+                    <p class="text-xs text-gray-300">Target Google Sheets ID: <span class="font-mono text-blue-300">131_7jVY0ZEe0pM9G1cZNZiGhPWds_UFZ_zWBXh_JpVM</span></p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3 text-sm">
+                <span id="userInfo" class="bg-gray-800 px-3 py-1.5 rounded-md text-gray-200 border border-gray-700 text-xs">Dosen / Guru Pamong</span>
+                <button onclick="openConfigModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md font-medium transition flex items-center space-x-1 shadow text-xs">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+                    <span>Atur URL Apps Script</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl w-full mx-auto px-4 py-8 flex-grow">
+        
+        <!-- Student Info Card -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 class="text-md font-semibold text-gray-700 mb-4 border-b pb-2 flex items-center justify-between">
+                <span>Informasi Mahasiswa PK</span>
+                <span id="connectionBadge" class="text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-medium">Status: Belum Terhubung (Atur Apps Script)</span>
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nama Mahasiswa <span class="text-red-500">*</span></label>
+                    <input type="text" id="namaMahasiswa" placeholder="Contoh: Ahmad Fauzi" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Nomor Induk Mahasiswa (NIM) <span class="text-red-500">*</span></label>
+                    <input type="text" id="nimMahasiswa" placeholder="Contoh: 21522441001" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 mb-1">Program Studi / Sekolah Praktik</label>
+                    <input type="text" id="prodiSekolah" placeholder="Contoh: Pend. TIK / SMAN 1 Yogyakarta" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-blue-900 shadow-sm">
+            <h3 class="font-bold mb-1 flex items-center text-blue-950">
+                <svg class="w-4 h-4 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Petunjuk Penilaian:
+            </h3>
+            <ol class="list-decimal pl-5 space-y-1 text-xs text-blue-800">
+                <li>Isilah format ini dengan memberi skor 1 – 10. (Kriteria Umum: 10 = istimewa; 1 = sangat buruk).</li>
+                <li>Jumlahkan skor-skor pada aspek tersebut untuk mendapatkan jumlah total skor (maksimal 100).</li>
+                <li>Berikan komentar umum pada tempat yang disediakan tentang kompetensi mahasiswa PK sejak awal hingga akhir pelaksanaan program.</li>
+                <li>Klik tombol <b class="text-green-700">Simpan & Kirim ke Spreadsheet</b> untuk merekap otomatis ke Google Sheets.</li>
+            </ol>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            <th class="py-3 px-4 w-16 text-center">NO</th>
+                            <th class="py-3 px-4">INDIKATOR</th>
+                            <th class="py-3 px-4 w-56 text-right">SKOR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="indicatorsTableBody" class="divide-y divide-gray-200 text-sm">
+                        <!-- Dynamically populated via script -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-gray-50 font-bold border-t-2 border-gray-200">
+                            <td colspan="2" class="py-3 px-4 text-right uppercase text-xs text-gray-700">Jumlah Total Skor (Maks. 100):</td>
+                            <td class="py-3 px-4 text-right text-lg text-blue-600" id="totalScoreDisplay">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <label class="block text-xs font-bold uppercase text-gray-600 mb-2">Catatan / Saran / Komentar</label>
+            <textarea id="catatanKomentar" rows="4" placeholder="Catatan/Saran/Komentar tentang performa mahasiswa PK..." class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+            
+            <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="text-xs text-gray-500">
+                    * Target Google Sheet: <a href="https://docs.google.com/spreadsheets/d/131_7jVY0ZEe0pM9G1cZNZiGhPWds_UFZ_zWBXh_JpVM/edit?usp=sharing" target="_blank" class="text-blue-600 underline font-medium">Buka Link Spreadsheet Anda</a>
+                </div>
+                <button onclick="submitAssessment()" id="submitBtn" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm shadow transition flex items-center justify-center space-x-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <span>Simpan & Kirim ke Spreadsheet</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-500">
+        Copyright © 2017-2026 IT UNY — Form Penilaian Terintegrasi Google Sheets
+    </footer>
+
+    <div id="configModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl max-w-xl w-full mx-4 p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-lg text-gray-800">Langkah Penghubung Google Spreadsheet</h3>
+                <button onclick="closeConfigModal()" class="text-gray-400 hover:text-gray-600 font-bold text-xl">&times;</button>
+            </div>
+            <p class="text-xs text-gray-600 mb-3 leading-relaxed">
+                Agar data langsung masuk ke link Google Sheet Anda (<a href="https://docs.google.com/spreadsheets/d/131_7jVY0ZEe0pM9G1cZNZiGhPWds_UFZ_zWBXh_JpVM/edit" target="_blank" class="text-blue-600 underline font-semibold">131_7jVY0ZEe0pM9G1cZNZiGhPWds_UFZ_zWBXh_JpVM</a>), lakukan 2 langkah mudah berikut:
+            </p>
+            <div class="bg-gray-50 rounded-lg p-3 mb-4 text-xs text-gray-700 space-y-2 border border-gray-200">
+                <p class="font-bold text-gray-900">Langkah 1: Pasang Skrip di Google Sheet Anda</p>
+                <p>1. Buka link Google Sheet Anda, lalu klik menu atas: <b>Extensions (Ekstensi) > Apps Script</b>.</p>
+                <p>2. Hapus seluruh kode bawaan, lalu salin dan tempel (paste) kode lengkap berikut:</p>
+                <div class="bg-gray-900 text-green-400 p-2.5 rounded font-mono text-[11px] overflow-x-auto whitespace-pre">function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  try {
+    var data = JSON.parse(e.postData.contents);
+    
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow([
+        "Timestamp", "Nama Mahasiswa", "NIM", "Prodi / Sekolah",
+        "Aspek 1", "Aspek 2", "Aspek 3", "Aspek 4", "Aspek 5", 
+        "Aspek 6", "Aspek 7", "Aspek 8", "Aspek 9", "Aspek 10", 
+        "Total Skor", "Catatan Komentar"
+      ]);
+    }
+    
+    sheet.appendRow([
+      data.timestamp || new Date(), data.namaMahasiswa, data.nimMahasiswa, data.prodiSekolah,
+      data.Aspek_1, data.Aspek_2, data.Aspek_3, data.Aspek_4, data.Aspek_5,
+      data.Aspek_6, data.Aspek_7, data.Aspek_8, data.Aspek_9, data.Aspek_10,
+      data.totalSkor, data.catatanKomentar
+    ]);
+    
+    return ContentService.createTextOutput(JSON.stringify({"result": "success"}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({"result": "error", "message": err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput("Web App Apps Script aktif dan siap menerima data POST dari Form Penilaian UNY.")
+    .setMimeType(ContentService.MimeType.TEXT);
+}</div>
+                <p class="font-bold text-gray-900 pt-1">Langkah 2: Lakukan New Deployment (PENTING!)</p>
+                <p>3. Di pojok kanan atas Apps Script, klik tombol <b>Deploy > New deployment</b> (Deployment baru).</p>
+                <p>4. Pilih jenis <b>Web app</b>. Pada <i>Execute as</i> pilih <b>Me (Email Anda)</b> dan <i>Who has access</i> pilih <b>Anyone (Siapa saja)</b>.</p>
+                <p>5. Klik <b>Deploy / Update</b>, lalu salin URL Web App terbaru berformat <code class="bg-gray-200 px-1 py-0.5 rounded">https://script.google.com/macros/s/.../exec</code> dan tempel di bawah ini.</p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Tempel URL Web App Apps Script di sini:</label>
+                <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeConfigModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium">Batal</button>
+                <button onclick="saveScriptUrl()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow">Simpan & Hubungkan</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-xl max-w-sm w-full mx-4 p-6 shadow-xl text-center">
+            <div id="alertIcon" class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 font-bold text-xl">✓</div>
+            <h4 id="alertTitle" class="font-bold text-lg text-gray-800 mb-2">Berhasil</h4>
+            <p id="alertMessage" class="text-xs text-gray-600 mb-4">Data berhasil direkap.</p>
+            <button onclick="closeAlertModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-medium">Tutup</button>
+        </div>
+    </div>
+
+    <script>
+        const indicators = [
+            "Pendahuluan pembelajaran.",
+            "Penguasaan materi pembelajaran.",
+            "Pengelolaan kelas.",
+            "Penggunaan media dan alat pembelajaran.",
+            "Pengelolaan waktu.",
+            "Penggunaan bahasa yang baik dan benar (lisan dan tulis).",
+            "Penggunaan teknologi informasi dalam pembelajaran.",
+            "Komunikasi nonverbal (termasuk suara).",
+            "Pelaksanaan penilaian",
+            "Penutup pembelajaran."
+        ];
+
+        let scriptUrl = localStorage.getItem('uny_form_script_url') || '';
+
+        window.onload = function() {
+            renderIndicators();
+            checkConnectionStatus();
+            // If URL is not set yet, automatically prompt user instructions on first load
+            if (!scriptUrl) {
+                setTimeout(() => {
+                    openConfigModal();
+                }, 500);
+            }
+        };
+
+        function renderIndicators() {
+            const tbody = document.getElementById('indicatorsTableBody');
+            tbody.innerHTML = '';
+
+            indicators.forEach((ind, index) => {
+                let tr = document.createElement('tr');
+                tr.className = index % 2 === 0 ? 'bg-white hover:bg-gray-50' : 'bg-gray-50/50 hover:bg-gray-50';
+                
+                let optionsHtml = '<option value="">== Pilih ==</option>';
+                for (let i = 1; i <= 10; i++) {
+                    optionsHtml += `<option value="${i}">${i} - ${i === 10 ? 'Istimewa' : (i >= 8 ? 'Baik Sekali' : (i >= 6 ? 'Baik' : 'Cukup/Kurang'))}</option>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 text-center font-medium text-gray-500">${index + 1}</td>
+                    <td class="py-3 px-4 text-gray-800 font-medium">${ind}</td>
+                    <td class="py-3 px-4 text-right">
+                        <select onchange="calculateTotal()" id="score_${index}" class="score-select w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                            ${optionsHtml}
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function calculateTotal() {
+            let total = 0;
+            for (let i = 0; i < indicators.length; i++) {
+                let val = parseInt(document.getElementById(`score_${i}`).value) || 0;
+                total += val;
+            }
+            document.getElementById('totalScoreDisplay').innerText = total;
+        }
+
+        function openConfigModal() {
+            document.getElementById('scriptUrlInput').value = scriptUrl;
+            document.getElementById('configModal').classList.remove('hidden');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.add('hidden');
+        }
+
+        function saveScriptUrl() {
+            scriptUrl = document.getElementById('scriptUrlInput').value.trim();
+            localStorage.setItem('uny_form_script_url', scriptUrl);
+            closeConfigModal();
+            checkConnectionStatus();
+            showAlert("Berhasil Terhubung", "URL Google Apps Script berhasil disimpan. Data sekarang akan masuk otomatis ke spreadsheet Anda.", "success");
+        }
+
+        function checkConnectionStatus() {
+            const badge = document.getElementById('connectionBadge');
+            if (scriptUrl) {
+                badge.className = "text-xs px-2.5 py-1 rounded-full bg-green-100 text-green-800 font-medium";
+                badge.innerText = "Status: Terhubung ke Spreadsheet 131_7jVY...";
+            } else {
+                badge.className = "text-xs px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-medium";
+                badge.innerText = "Status: Belum Terhubung (Klik Atur URL Apps Script)";
+            }
+        }
+
+        function showAlert(title, message, type = 'success') {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMessage').innerText = message;
+            const icon = document.getElementById('alertIcon');
+            if (type === 'success') {
+                icon.className = "w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center mx-auto mb-3 font-bold text-xl";
+                icon.innerText = "✓";
+            } else {
+                icon.className = "w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-3 font-bold text-xl";
+                icon.innerText = "!";
+            }
+            document.getElementById('alertModal').classList.remove('hidden');
+        }
+
+        function closeAlertModal() {
+            document.getElementById('alertModal').classList.add('hidden');
+        }
+
+        function submitAssessment() {
+            const nama = document.getElementById('namaMahasiswa').value.trim();
+            const nim = document.getElementById('nimMahasiswa').value.trim();
+            const prodi = document.getElementById('prodiSekolah').value.trim();
+            const catatan = document.getElementById('catatanKomentar').value.trim();
+
+            if (!nama || !nim) {
+                showAlert("Peringatan", "Nama Mahasiswa dan NIM wajib diisi sebelum menyimpan.", "error");
+                return;
+            }
+
+            let scores = {};
+            let allFilled = true;
+            let total = 0;
+
+            for (let i = 0; i < indicators.length; i++) {
+                let val = document.getElementById(`score_${i}`).value;
+                if (!val) {
+                    allFilled = false;
+                }
+                scores[`Aspek_${i+1}`] = parseInt(val) || 0;
+                total += parseInt(val) || 0;
+            }
+
+            if (!allFilled) {
+                showAlert("Peringatan", "Semua 10 indikator penilaian harus dipilih skornya terlebih dahulu.", "error");
+                return;
+            }
+
+            const payload = {
+                timestamp: new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' }),
+                namaMahasiswa: nama,
+                nimMahasiswa: nim,
+                prodiSekolah: prodi || '-',
+                ...scores,
+                totalSkor: total,
+                catatanKomentar: catatan || '-'
+            };
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Mengirim ke Spreadsheet...";
+
+            if (scriptUrl) {
+                fetch(scriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Simpan & Kirim ke Spreadsheet</span>';
+                    showAlert("Berhasil Terkirim!", `Nilai mahasiswa ${nama} (Total Skor: ${total}) berhasil masuk ke spreadsheet Anda!`, "success");
+                    resetForm();
+                }).catch(err => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Simpan & Kirim ke Spreadsheet</span>';
+                    showAlert("Kendala Pengiriman", "Gagal mengirim ke Apps Script: " + err, "error");
+                });
+            } else {
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span>Simpan & Kirim ke Spreadsheet</span>';
+                    openConfigModal();
+                    showAlert("Perhatian", "Silakan masukkan URL Web App Apps Script dari spreadsheet target Anda terlebih dahulu.", "error");
+                }, 500);
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('namaMahasiswa').value = '';
+            document.getElementById('nimMahasiswa').value = '';
+            document.getElementById('prodiSekolah').value = '';
+            document.getElementById('catatanKomentar').value = '';
+            for (let i = 0; i < indicators.length; i++) {
+                document.getElementById(`score_${i}`).value = "";
+            }
+            document.getElementById('totalScoreDisplay').innerText = "0";
+        }
+    </script>
+</body>
+</html>
